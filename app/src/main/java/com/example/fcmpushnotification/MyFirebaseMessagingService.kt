@@ -9,8 +9,6 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Build
 import android.util.Log
-import android.widget.RemoteViews
-import com.google.firebase.installations.Utils
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import kotlin.random.Random
@@ -24,12 +22,19 @@ class MyFirebaseMessagingService() : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
-        Log.d("khbbfkdsjf", "Firebase RemoteMessage $message")
-        showNotification(message)
+        if (message.data.isNotEmpty()) {
+            // Extract data from the message
+            val title: String = message.data["tittle"] ?:""
+            val subtitle: String = message.data["Subtiitle"] ?:""
+            val body: String = message.data["body"] ?:""
+            Log.d("khbbfkdsjf", "onMessageReceived ${message.notification?.title}")
+            Log.d("khbbfkdsjf", "onMessageReceived ${message.notification?.body}")
+            showNotification(title, subtitle, body)
+        }
     }
 
-    private fun showNotification(message: RemoteMessage) {
-        message.let {
+    private fun showNotification(title: String, subtitle: String, body: String) {
+        title.let {
             val notificationManager = this.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             // checking if android version is greater than oreo(API 26) or not
             val notificationBuilder: Notification.Builder =
@@ -50,8 +55,9 @@ class MyFirebaseMessagingService() : FirebaseMessagingService() {
                 }
 
             notificationBuilder
-                .setContentTitle(message.notification?.title)
-                .setSubText(message.notification?.body)
+                .setContentTitle(title)
+                .setSubText(subtitle)
+                .setContentText(body)
                 .setSmallIcon(R.drawable.ic_notifications_icon)
                 .setLargeIcon(BitmapFactory.decodeResource(this.resources, R.drawable.ic_notifications_icon))
                 .setContentIntent(getPendingIntent())
